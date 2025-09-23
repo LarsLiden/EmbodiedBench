@@ -1,7 +1,7 @@
 Repo Changes
 ==============
 Remove the pyairports and specific version number of outlines in the config doc
-transformers==4.49.0
+transformers==4.52.4
 lmdeploy==0.10.0
 tokenizers=0.21.2
 
