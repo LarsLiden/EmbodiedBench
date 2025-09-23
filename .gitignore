@@ -1,7 +1,6 @@
 outputs/
 *.pyc
 *__pycache__
-.vscode/
 embodiedbench/envs/eb_manipulation/generate_dataset.sh
 embodiedbench/envs/eb_manipulation/tools/__pycache__/grasploc.cpython-39.pyc
 *running
@@ -13,3 +12,5 @@ embodiedbench.egg-info1
 embodiedbench/envs/eb_habitat/data/
 dockers
 data
+CoppeliaSim_Pro_V4_1_0_Ubuntu20_04/
+amsolver.egg-info

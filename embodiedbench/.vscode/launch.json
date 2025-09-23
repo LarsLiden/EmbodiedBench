@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "EmbodiedBench Alfred Baseline",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "embodiedbench.main",
+            "args": [
+                "env=eb-alf",
+                "model_name=~/checkpoints/clean_grounded/checkpoint-2100",
+                "model_type=local",
+                "exp_name=baseline",
+                "tp=1"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/..",
+            "envFile": "${workspaceFolder}/../.env",
+            "justMyCode": false,
+            "python": "/home/laliden/miniconda3/envs/embench/bin/python"
+        },
+        {
+            "name": "EmbodiedBench Alfred Baseline (Debug)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "embodiedbench.main",
+            "args": [
+                "env=eb-alf",
+                "model_name=~/checkpoints/clean_grounded/checkpoint-2100",
+                "model_type=local",
+                "exp_name=baseline",
+                "tp=1",
+                "log_level=DEBUG"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/..",
+            "envFile": "${workspaceFolder}/../.env",
+            "justMyCode": false,
+            "python": "/home/laliden/miniconda3/envs/embench/bin/python",
+            "stopOnEntry": false
+        }
+    ]
+}
