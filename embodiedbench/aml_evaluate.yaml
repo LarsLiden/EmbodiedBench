@@ -91,7 +91,7 @@ search:
         NVIDIA_DRIVER_CAPABILITIES: "compute,utility,video,graphics"
         _AZUREML_SINGULARITY_JOB_UAI: "/subscriptions/2cd190bb-b42a-477c-b1bb-2f20932d8dc5/resourceGroups/lalidenaml/providers/Microsoft.ManagedIdentity/userAssignedIdentities/lalidenamlid"
 
-  max_trials: 80
+  max_trials: 1
   type: grid
   params:
     - name: model_config
@@ -110,7 +110,7 @@ search:
         #"Magmar_Clean_Grounded_SFT_CR::magmathor/training/checkpoints/magmar--clean_grounded_rescaled__sft__llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
 
         #"Qwen2.5-VL-7B-Instruct_BASE::Qwen/Qwen2.5-VL-7B-Instruct",
-        #"Qwen2.5-VL-7B-Instruct_SFT_C::magmathor/training/checkpoints/Qwen2.5-VL-7B-Instruct__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
+        "Qwen2.5-VL-7B-Instruct_SFT_C::magmathor/training/checkpoints/Qwen2.5-VL-7B-Instruct__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
         #"Qwen2.5-VL-7B-Instruct_SFT_CR::magmathor/training/checkpoints/llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
 
         #"videor1_pix_BASE::/model/projects/reubenprojects/magma-reasoning/sft-model-weights/videor1/sing/llamafactory_videor1_grounded_vg_scored_images_4.1k_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
@@ -123,6 +123,6 @@ search:
 
         #"gpt-o3_BASE::gpt-o3",
         #"GLM-4.1V-9B-Thinking_BASE::model/projects/reubenprojects/pretrained_weights/GLM-4.1V-9B-Thinking/",
-        "GLM-4.5V_BASE::model/projects/reubenprojects/pretrained_weights/GLM-4.5V/",
+        #"GLM-4.5V_BASE::model/projects/reubenprojects/pretrained_weights/GLM-4.5V/",
         #"Replay::replay"
       ]
