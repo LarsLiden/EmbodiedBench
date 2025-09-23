@@ -11,7 +11,8 @@
                 "model_name=~/checkpoints/clean_grounded/checkpoint-2100",
                 "model_type=local",
                 "exp_name=baseline",
-                "tp=1"
+                "tp=1",
+                "temperature=0.6"
             ],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/..",
@@ -30,7 +31,8 @@
                 "model_type=local",
                 "exp_name=baseline",
                 "tp=1",
-                "log_level=DEBUG"
+                "log_level=DEBUG",
+                "temperature=0.6"
             ],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/..",

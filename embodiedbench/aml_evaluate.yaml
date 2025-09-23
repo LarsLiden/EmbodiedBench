@@ -1,0 +1,128 @@
+description: Evaluate models with magmathor-eval
+
+# 24 / 27
+target:
+  service: sing
+  name: palisades27
+  workspace_name: lalidenamlws
+
+environment:
+  image: amlt-sing/acpt-torch2.7.1-py3.10-cuda12.6-ubuntu22.04
+  setup:
+    - set -ex
+    - echo "start"
+
+storage:
+  magmathor:
+    storage_account_name: magmardata
+    container_name: magmathor
+  model:
+    storage_account_name: reubenprojects
+    container_name: model
+
+code:
+  local_dir: .
+  ignore:
+    - .venv
+    - .github
+
+search:
+  job_template:
+    name: eval-{model_name}
+    sku: 1x 40G1-A100
+    priority: high
+    sla_tier: Premium
+    process_count_per_node: 1
+    identity: managed
+
+    command:
+      - set -ex
+      - echo "--= Starting Commands =--"
+
+      - echo "--= LFS Pull =--"
+      - git lfs install
+      - git lfs pull
+
+      - echo "--= Setting up Virtual Environment =--"
+      - conda env create -f conda_envs/environment.yaml
+      - conda activate embench
+
+      - echo "--= Installing dependencies =--"
+      - bash install.sh
+      - pip install git+https://github.com/NICTA/pyairports.git
+      # - pip install -e .
+
+      # Note: Ignore ALSA errors, they are ok
+      - export TOKENIZERS_PARALLELISM=false
+
+      # Exctract params
+      - export MODEL_CONFIG_STR='{model_config}'
+      - export MODEL_NAME="$$(echo "$$MODEL_CONFIG_STR" | cut -d':' -f1)"
+      - export MODEL_PATH="$$(echo "$$MODEL_CONFIG_STR" | cut -d':' -f3)"
+      - export MODEL_CHECKPOINT="/mnt/$$MODEL_PATH/"
+      - echo Model Name is $$MODEL_NAME
+      - echo Model Path is $$MODEL_PATH
+      - echo Full Model Checkpoint Path is $$MODEL_CHECKPOINT
+
+      # Install Xvfb for Unity virtual display support
+      - echo "--= Installing Xvfb and Vulkan tools =--"
+      - sudo apt-get install xvfb
+      - Xvfb :1 -screen 0 1920x1080x24 &
+      - export DISPLAY=:1
+      - python -m embodiedbench.envs.eb_alfred.scripts.startx 1
+
+      # Ensure the X11 socket directory exists and is world-writable (fixes Xvfb permission error)
+      # - sudo mkdir -p /tmp/.X11-unix
+      # - sudo chmod 1777 /tmp/.X11-unix
+      # - echo "--= Init Complete =--"
+
+      - echo "--= Starting Model Tester =--"
+      - python -m embodiedbench.main env=eb-alf model_name="$$MODEL_CHECKPOINT" model_type=local exp_name=$$MODEL_NAME tp=1
+      - LOG="$$HOME/.config/unity3d/Allen Institute for Artificial Intelligence/AI2-THOR/Player.log"; mkdir -p ./outputs/unity; [ -f "$$LOG" ] && cp "$$LOG" ./outputs/unity/Player.log || echo "Player.log still not present"
+
+    submit_args:
+      env:
+        NCCL_IB_DISABLE: 0
+        NCCL_DEBUG: INFO
+        NCCL_IB_TIMEOUT: 60
+        MKL_THREADING_LAYER: GNU
+        SHARED_MEMORY_PERCENT: 0.5
+        NVIDIA_VISIBLE_DEVICES: "all"
+        NVIDIA_DRIVER_CAPABILITIES: "compute,utility,video,graphics"
+        _AZUREML_SINGULARITY_JOB_UAI: "/subscriptions/2cd190bb-b42a-477c-b1bb-2f20932d8dc5/resourceGroups/lalidenaml/providers/Microsoft.ManagedIdentity/userAssignedIdentities/lalidenamlid"
+
+  max_trials: 80
+  type: grid
+  params:
+    - name: model_config
+      spec: discrete
+      values: [
+        #"LlamaFactory_BASE::model/projects/reubenprojects/magma-reasoning/sft-model-weights/pixmo-count/sing/llamafactory_glm_formatted_gpt4o_highest_score_answer_format_sft_pixmo_count_train_qwenvl_0.5_glm_0.5_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
+        #"LlamaFactory_SFT_C::magmathor/training/checkpoints/magmar--llamafactory__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
+        #"LlamaFactory_SFT_CR::magmathor/training/checkpoints/magmar--llamafactory__sft__llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
+
+        #"Magmar_Grounded_BASE::model/projects/reubenprojects/magma-reasoning/sft-model-weights/pixmo-count/sing/grounded_rescaled_glm_formatted_gpt4o_highest_score_answer_format_sft_pixmo_count_train_qwenvl_0.5_glm_0.5_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
+        #"Magmar_Grounded_SFT_C::magmathor/training/checkpoints/magmar--grounded_rescaled__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
+        #"Magmar_Grounded_SFT_CR::magmathor/training/checkpoints/magmar--grounded_rescaled__sft__llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
+
+        #"Magmar_Clean_Grounded_BASE::model/projects/reubenprojects/magma-reasoning/sft-model-weights/pixmo-count/sing/clean_grounded_rescaled_glm_formatted_gpt4o_highest_score_answer_format_sft_pixmo_count_train_qwenvl_0.5_glm_0.5_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
+        #"Magmar_Clean_Grounded_SFT_C::magmathor/training/checkpoints/magmar--clean_grounded_rescaled__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
+        #"Magmar_Clean_Grounded_SFT_CR::magmathor/training/checkpoints/magmar--clean_grounded_rescaled__sft__llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
+
+        #"Qwen2.5-VL-7B-Instruct_BASE::Qwen/Qwen2.5-VL-7B-Instruct",
+        #"Qwen2.5-VL-7B-Instruct_SFT_C::magmathor/training/checkpoints/Qwen2.5-VL-7B-Instruct__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum1_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model_multinode/checkpoint-2100/",
+        #"Qwen2.5-VL-7B-Instruct_SFT_CR::magmathor/training/checkpoints/llamafactory_ai2thor_correct+recoveries_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_25088_50176_model/checkpoint-2100/",
+
+        #"videor1_pix_BASE::/model/projects/reubenprojects/magma-reasoning/sft-model-weights/videor1/sing/llamafactory_videor1_grounded_vg_scored_images_4.1k_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
+        #"videor1_pix_SFT_C::magmathor/training/checkpoints/MagmaR-videor1_pix_BASE__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_3136_12845056_model_singlenode/checkpoint-2100/",
+        #"videor1_pix_SFT_CR::magmathor/training/checkpoints/MagmaR-videor1_pix_BASE__sft__llamafactory_ai2thor_correct+recovery_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_3136_12845056_model_singlenode/checkpoint-2100/",
+
+        #"videor1_grounded_pix_BASE::model/projects/reubenprojects/magma-reasoning/sft-model-weights/videor1/sing/llamafactory_videor1_grounded_vg_scored_images_4.1k_pixmo_count_grounded_pix_3136_262144_bs1_accum1_gpus8_lr1e-5_cosine0.1_epoch3_freeze_vision-true-proj-true-lm-false_model/",
+        #"videor1_grounded_pix_SFT_C::magmathor/training/checkpoints/MagmaR-videor1_grounded_pix_BASE__sft__llamafactory_ai2thor_correct-only_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_3136_12845056_model_singlenode/checkpoint-2100/",
+        #"videor1_grounded_pix_SFT_CR::magmathor/training/checkpoints/MagmaR-videor1_grounded_pix_BASE__sft__llamafactory_ai2thor_correct+recovery_tag_bs1_accum2_lr1e-5_cosine_0.1_ft_llm_qwen_base_pix_3136_12845056_model_singlenode/checkpoint-2100/",
+
+        #"gpt-o3_BASE::gpt-o3",
+        #"GLM-4.1V-9B-Thinking_BASE::model/projects/reubenprojects/pretrained_weights/GLM-4.1V-9B-Thinking/",
+        "GLM-4.5V_BASE::model/projects/reubenprojects/pretrained_weights/GLM-4.5V/",
+        #"Replay::replay"
+      ]
