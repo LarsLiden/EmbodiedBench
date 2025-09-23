@@ -1,0 +1,10 @@
+Installation
+============
+Remove the pyairports and specific version number of outlines in the config doc
+lmdeploy==0.10.0
+transformers==4.49.0
+
+Running
+=======
+Pip install --upgrade lmdeploy
+export TOKENIZERS_PARALLELISM=false   (Disable warnings -will be set to false anyway)
