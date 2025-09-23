@@ -7,12 +7,18 @@ tokenizers=0.21.2
 
 Installation
 ============
+bach install.sh
+
 conda env create -f conda_envs/environment.yaml
 conda activate embench
 pip install -e .
 
+git lfs install
+git lfs pull
+
 Running
 ==============
+Note: Ignore ALSA errors, they are ok
 export TOKENIZERS_PARALLELISM=false
 
 python -m embodiedbench.main env=eb-alf model_name=~/checkpoints/clean_grounded/checkpoint-2100 model_type=local exp_name='baseline' tp=1
