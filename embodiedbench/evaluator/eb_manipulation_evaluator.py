@@ -219,7 +219,8 @@ class EB_ManipulationEvaluator():
                                         multiview=self.config["multiview"],
                                         multistep=self.config["multistep"],
                                         visual_icl=self.config["visual_icl"],
-                                        tp=self.config["tp"])
+                                        tp=self.config["tp"],
+                                        temperature=self.config.get('temperature', 0.0))
             self.evaluate()
             with open(os.path.join(self.log_path, 'config.txt'), 'w') as f:
                 f.write(str(self.config))

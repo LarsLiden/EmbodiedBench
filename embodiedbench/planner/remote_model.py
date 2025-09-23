@@ -13,7 +13,6 @@ from embodiedbench.planner.planner_config.generation_guide_manip import llm_gene
 from embodiedbench.planner.planner_utils import convert_format_2claude, convert_format_2gemini, ActionPlan_1, ActionPlan, ActionPlan_lang, \
                                              ActionPlan_1_manip, ActionPlan_manip, ActionPlan_lang_manip, fix_json
 
-temperature = 0
 max_completion_tokens = 2048
 remote_url = os.environ.get('remote_url')
 
@@ -24,12 +23,14 @@ class RemoteModel:
         model_type='remote',
         language_only=False,
         tp=1,
-        task_type=None # used to distinguish between manipulation and other environments
+        task_type=None, # used to distinguish between manipulation and other environments
+        temperature=0.0
     ):
         self.model_name = model_name
         self.model_type = model_type
         self.language_only = language_only
         self.task_type = task_type
+        self.temperature = temperature
 
         if self.model_type == 'local':
             backend_config = PytorchEngineConfig(session_len=12000, dtype='float16', tp=tp)
@@ -126,7 +127,7 @@ class RemoteModel:
         response = self.model(
             message_history,
             gen_config=GenerationConfig(
-                temperature=temperature,
+                temperature=self.temperature,
                 response_format=response_format,
                 max_new_tokens=max_completion_tokens,
             )
@@ -143,7 +144,7 @@ class RemoteModel:
         response = self.model.messages.create(
             model=self.model_name,
             max_tokens=max_completion_tokens,
-            temperature=temperature,
+            temperature=self.temperature,
             messages=message_history
         )
 
@@ -159,7 +160,7 @@ class RemoteModel:
                 model=self.model_name, 
                 messages=message_history,
                 response_format= ActionPlan_lang_manip if self.language_only else ActionPlan_manip,
-                temperature=temperature,
+                temperature=self.temperature,
                 max_tokens=max_completion_tokens
             )
         else:
@@ -167,7 +168,7 @@ class RemoteModel:
                 model=self.model_name, 
                 messages=message_history,
                 response_format= ActionPlan_lang if self.language_only else ActionPlan,
-                temperature=temperature,
+                temperature=self.temperature,
                 max_tokens=max_completion_tokens
             )
         tokens = response.usage.prompt_tokens
@@ -191,7 +192,7 @@ class RemoteModel:
             model=self.model_name,
             messages=message_history,
             response_format=response_format,
-            temperature=temperature,
+            temperature=self.temperature,
             max_tokens=max_completion_tokens
         )
         out = response.choices[0].message.content
@@ -218,7 +219,7 @@ class RemoteModel:
             model=self.model_name,
             messages=message_history,
             response_format=response_format,
-            temperature=temperature,
+            temperature=self.temperature,
             max_tokens=max_completion_tokens
         )
 
@@ -231,7 +232,7 @@ class RemoteModel:
                 model="accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
                 messages=message_history,
                 response_format={"type": "json_object", "schema": ActionPlan_1_manip.model_json_schema()},
-                temperature = temperature
+                temperature = self.temperature
             )
             out = response.choices[0].message.content
             
@@ -240,7 +241,7 @@ class RemoteModel:
                 model="accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
                 messages=message_history,
                 response_format={"type": "json_object", "schema": ActionPlan_1.model_json_schema()},
-                temperature = temperature
+                temperature = self.temperature
             )
             out = response.choices[0].message.content
         return out
@@ -265,7 +266,7 @@ class RemoteModel:
             model=self.model_name,
             messages=message_history,
             response_format=response_format,
-            temperature=temperature,
+            temperature=self.temperature,
             max_tokens=max_completion_tokens
         )
         out = response.choices[0].message.content
@@ -291,7 +292,7 @@ class RemoteModel:
             model=self.model_name,
             messages=message_history,
             response_format=response_format,
-            temperature=temperature,
+            temperature=self.temperature,
             max_tokens=max_completion_tokens
         )
 
@@ -321,7 +322,7 @@ class RemoteModel:
             model=self.model_name,
             messages=message_history,
             # response_format=response_format,
-            temperature=temperature,
+            temperature=self.temperature,
             max_tokens=max_completion_tokens,
         )
 
