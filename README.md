@@ -251,6 +251,9 @@ python -m embodiedbench.main env=eb-nav model_name=gpt-4o exp_name='baseline'
 
 conda activate embench_man 
 python -m embodiedbench.main env=eb-man model_name=claude-3-5-sonnet-20241022 exp_name='baseline'
+
+# Example with temperature setting
+python -m embodiedbench.main env=eb-nav model_name=gpt-4o temperature=0.7 exp_name='creative_baseline'
 ```
 #### Configuration Options
 You can customize the evaluation using the following flags:
@@ -264,6 +267,7 @@ You can customize the evaluation using the following flags:
   - `'gpt-4o'`, `'gpt-4o-mini'`, `'claude-3-5-sonnet-20241022'`, `'gemini-1.5-pro'`, `'gemini-2.0-flash-exp'`, `'gemini-1.5-flash'`  
 
 - **`model_type`**: Set to `'remote'` by default.  
+- **`temperature`**: Controls the randomness of model outputs (default: `0.0` for deterministic responses). Higher values (e.g., `0.7` or `1.0`) increase randomness.  
 - **`down_sample_ratio`**: Data sampling ratio (default `1.0`). Use `0.1` for debugging (10% of the dataset).  
 - **`language_only`**: If `True` (or `1`), the agent receives only text input (default: `False`).  
 - **`eval_sets`**: List of subsets to evaluate (default: all subsets).  
