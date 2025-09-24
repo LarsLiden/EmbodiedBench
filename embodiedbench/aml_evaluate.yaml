@@ -28,7 +28,7 @@ code:
 
 search:
   job_template:
-    name: eval-{model_name}
+    name: eval-{model_config}
     sku: 1x 40G1-A100
     priority: high
     sla_tier: Premium
@@ -39,17 +39,23 @@ search:
       - set -ex
       - echo "--= Starting Commands =--"
 
-      - echo "--= LFS Pull =--"
-      - git lfs install
-      - git lfs pull
+      #- echo "--= LFS Pull =--"
+      #- sudo apt-get update
+      #- sudo apt-get install git-lfs -y
+      #- git lfs install
+      #- git lfs pull
 
       - echo "--= Setting up Virtual Environment =--"
+      - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+      - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
       - conda env create -f conda_envs/environment.yaml
       - conda activate embench
 
+
       - echo "--= Installing dependencies =--"
-      - bash install.sh
+      # Install manually to deal with compatibility issues
       - pip install git+https://github.com/NICTA/pyairports.git
+      - bash install.sh
       # - pip install -e .
 
       # Note: Ignore ALSA errors, they are ok
