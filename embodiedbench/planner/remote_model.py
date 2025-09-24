@@ -4,7 +4,14 @@ import os
 import base64
 import anthropic
 import google.generativeai as genai
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
+from azure.identity import (
+    DefaultAzureCredential,
+    ChainedTokenCredential,
+    AzureCliCredential,
+    ManagedIdentityCredential,
+    get_bearer_token_provider,
+)
 import typing_extensions as typing
 import lmdeploy
 from lmdeploy import pipeline, GenerationConfig, PytorchEngineConfig
@@ -35,6 +42,41 @@ class RemoteModel:
         if self.model_type == 'local':
             backend_config = PytorchEngineConfig(session_len=12000, dtype='float16', tp=tp)
             self.model = pipeline(self.model_name, backend_config=backend_config)
+        elif self.model_type == 'azure_openai':
+            # Azure OpenAI setup with proper authentication
+            scope = "api://trapi/.default"
+            
+            azure_credential = ChainedTokenCredential(
+                AzureCliCredential(),
+                DefaultAzureCredential(
+                    exclude_cli_credential=True,
+                    exclude_environment_credential=True,
+                    exclude_shared_token_cache_credential=True,
+                    exclude_developer_cli_credential=True,
+                    exclude_powershell_credential=True,
+                    exclude_interactive_browser_credential=True,
+                    exclude_visual_studio_code_credentials=True,
+                    managed_identity_client_id=os.environ.get("DEFAULT_IDENTITY_CLIENT_ID"),
+                ),
+            )
+
+            token_provider = get_bearer_token_provider(
+                ChainedTokenCredential(
+                    AzureCliCredential(),
+                    ManagedIdentityCredential(),
+                ),
+                scope,
+            )
+            
+            api_version = "2024-12-01-preview"
+            instance = "gcr/shared"
+            endpoint = f"https://trapi.research.microsoft.com/{instance}"
+            
+            self.model = AzureOpenAI(
+                azure_endpoint=endpoint,
+                azure_ad_token_provider=token_provider,
+                api_version=api_version,
+            )
         else:
             if "claude" in self.model_name:
                 self.model = anthropic.Anthropic(
@@ -75,6 +117,8 @@ class RemoteModel:
     def respond(self, message_history: list):
         if self.model_type == 'local':
             return self._call_local(message_history)
+        elif self.model_type == 'azure_openai':
+            return self._call_azure_openai(message_history)
         else:
             if "claude" in self.model_name:
                 return self._call_claude(message_history)
@@ -198,6 +242,44 @@ class RemoteModel:
         out = response.choices[0].message.content
 
         return out
+    
+    def _call_azure_openai(self, message_history: list):
+        """
+        Handle Azure OpenAI model calls with proper deployment name handling
+        and temperature adjustment for o3 models
+        """
+        deployment_name = self.model_name
+        
+        # Handle special case for o3 models which only support temperature 1.0
+        if "o3" in deployment_name:
+            temperature = 1.0
+        else:
+            temperature = self.temperature
+
+        # Set up response format based on task type and language mode
+        if not self.language_only:
+            if self.task_type == 'manip':
+                response_format = dict(type='json_schema', json_schema=dict(name='embodied_planning', schema=vlm_generation_guide_manip))
+            else:
+                response_format = dict(type='json_schema', json_schema=dict(name='embodied_planning', schema=vlm_generation_guide))
+        else:
+            if self.task_type == 'manip':
+                response_format = dict(type='json_schema', json_schema=dict(name='embodied_planning', schema=llm_generation_guide_manip))
+            else:
+                response_format = dict(type='json_schema', json_schema=dict(name='embodied_planning', schema=llm_generation_guide))
+
+        try:
+            response = self.model.chat.completions.create(
+                model=deployment_name,
+                messages=message_history,
+                response_format=response_format,
+                temperature=temperature,
+                max_tokens=max_completion_tokens
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"--= !!! Invalid Azure OpenAI Request: {e} !!! =--", file=sys.stderr)
+            raise
     
     def _call_qwen7b(self, message_history: list):
 
