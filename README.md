@@ -254,6 +254,26 @@ python -m embodiedbench.main env=eb-man model_name=claude-3-5-sonnet-20241022 ex
 
 # Example with temperature setting
 python -m embodiedbench.main env=eb-nav model_name=gpt-4o temperature=0.7 exp_name='creative_baseline'
+
+# Example with Azure OpenAI (requires Azure authentication)
+python -m embodiedbench.main env=eb-alf model_name=Qwen/Qwen2-VL-7B-Instruct model_type=azure_openai exp_name='baseline' tp=1
+python -m embodiedbench.main env=eb-alf model_name=o3_2025-04-16 model_type=azure_openai exp_name='baseline' tp=1
+```
+
+#### Azure OpenAI Setup
+To use `model_type=azure_openai`, you need to authenticate with Azure:
+```bash
+# Install Azure CLI and login
+az login
+
+# Or set up service principal authentication
+export DEFAULT_IDENTITY_CLIENT_ID=your_client_id
+```
+
+The Azure OpenAI integration uses Microsoft TRAPI service and supports:
+- **Authentication**: Azure CLI credentials or managed identity
+- **Special handling**: o3 models automatically use temperature=1.0 (required by API)
+- **Endpoint**: Uses `https://trapi.research.microsoft.com/gcr/shared` by default
 ```
 #### Configuration Options
 You can customize the evaluation using the following flags:
@@ -266,7 +286,11 @@ You can customize the evaluation using the following flags:
 - **`model_name`**: Full model name, including proprietary options like:  
   - `'gpt-4o'`, `'gpt-4o-mini'`, `'claude-3-5-sonnet-20241022'`, `'gemini-1.5-pro'`, `'gemini-2.0-flash-exp'`, `'gemini-1.5-flash'`  
 
-- **`model_type`**: Set to `'remote'` by default.  
+- **`model_type`**: Set to `'remote'` by default. Options include:
+  - `'remote'`: Standard API-based model access (default)
+  - `'local'`: Local model execution with tensor parallelism
+  - `'azure_openai'`: Azure OpenAI API with Microsoft TRAPI authentication
+  - `'custom'`: Custom model serving via API endpoint  
 - **`temperature`**: Controls the randomness of model outputs (default: `0.0` for deterministic responses). Higher values (e.g., `0.7` or `1.0`) increase randomness.  
 - **`down_sample_ratio`**: Data sampling ratio (default `1.0`). Use `0.1` for debugging (10% of the dataset).  
 - **`language_only`**: If `True` (or `1`), the agent receives only text input (default: `False`).  
