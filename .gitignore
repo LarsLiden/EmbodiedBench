@@ -15,3 +15,4 @@ data
 CoppeliaSim_Pro_V4_1_0_Ubuntu20_04/
 amsolver.egg-info
 .amltconfig
+embodiedbench/.vscode/settings.json
