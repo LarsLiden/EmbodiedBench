@@ -46,38 +46,24 @@ class RemoteModel:
         elif self.model_type == 'qwen_instruct':
             self.model = QwenVLActor(self.model_name, self.temperature)
         elif self.model_type == 'azure_openai':
-            # Azure OpenAI setup with proper authentication
+            # Authenticate by trying az login first, then a managed identity, if one exists on the system)
             scope = "api://trapi/.default"
-            
-            azure_credential = ChainedTokenCredential(
-                AzureCliCredential(),
-                DefaultAzureCredential(
-                    exclude_cli_credential=True,
-                    exclude_environment_credential=True,
-                    exclude_shared_token_cache_credential=True,
-                    exclude_developer_cli_credential=True,
-                    exclude_powershell_credential=True,
-                    exclude_interactive_browser_credential=True,
-                    exclude_visual_studio_code_credentials=True,
-                    managed_identity_client_id=os.environ.get("DEFAULT_IDENTITY_CLIENT_ID"),
-                ),
-            )
-
-            token_provider = get_bearer_token_provider(
+            credential = get_bearer_token_provider(
                 ChainedTokenCredential(
                     AzureCliCredential(),
                     ManagedIdentityCredential(),
                 ),
                 scope,
             )
-            
-            api_version = "2024-12-01-preview"
-            instance = "gcr/shared"
+
+            api_version = "2024-12-01-preview"  # Ensure this is a valid API version see: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation#latest-ga-api-release
+            instance = "gcr/shared"  # See https://aka.ms/trapi/models for the instance name
             endpoint = f"https://trapi.research.microsoft.com/{instance}"
-            
+
+            # Create an AzureOpenAI Client
             self.model = AzureOpenAI(
                 azure_endpoint=endpoint,
-                azure_ad_token_provider=token_provider,
+                azure_ad_token_provider=credential,
                 api_version=api_version,
             )
         else:
@@ -195,7 +181,7 @@ class RemoteModel:
             messages=message_history
         )
 
-        return response.content[0].text 
+        return response.content[0].text
 
     def _call_gemini(self, message_history: list):
 
@@ -204,7 +190,7 @@ class RemoteModel:
 
         if self.task_type == 'manip':
             response = self.model.beta.chat.completions.parse(
-                model=self.model_name, 
+                model=self.model_name,
                 messages=message_history,
                 response_format= ActionPlan_lang_manip if self.language_only else ActionPlan_manip,
                 temperature=self.temperature,
@@ -212,7 +198,7 @@ class RemoteModel:
             )
         else:
             response = self.model.beta.chat.completions.parse(
-                model=self.model_name, 
+                model=self.model_name,
                 messages=message_history,
                 response_format= ActionPlan_lang if self.language_only else ActionPlan,
                 temperature=self.temperature,
@@ -245,14 +231,14 @@ class RemoteModel:
         out = response.choices[0].message.content
 
         return out
-    
+
     def _call_azure_openai(self, message_history: list):
         """
         Handle Azure OpenAI model calls with proper deployment name handling
         and temperature adjustment for o3 models
         """
-        deployment_name = self.model_name
-        
+        deployment_name = "o3_2025-04-16" #self.model_name
+
         # Handle special case for o3 models which only support temperature 1.0
         if "o3" in deployment_name:
             temperature = 1.0
@@ -277,13 +263,13 @@ class RemoteModel:
                 messages=message_history,
                 response_format=response_format,
                 temperature=temperature,
-                max_tokens=max_completion_tokens
+                max_completion_tokens=max_completion_tokens
             )
             return response.choices[0].message.content
         except Exception as e:
             print(f"--= !!! Invalid Azure OpenAI Request: {e} !!! =--", file=sys.stderr)
             raise
-    
+
     def _call_qwen7b(self, message_history: list):
 
         if not self.language_only:
@@ -310,7 +296,7 @@ class RemoteModel:
 
         out = response.choices[0].message.content
         return out
-    
+
     def _call_llama90(self, message_history: list):
         if self.task_type == "manip":
             response = self.model.chat.completions.create(
@@ -320,7 +306,7 @@ class RemoteModel:
                 temperature = self.temperature
             )
             out = response.choices[0].message.content
-            
+
         else:
             response = self.model.chat.completions.create(
                 model="accounts/fireworks/models/llama-v3p2-90b-vision-instruct",
@@ -330,7 +316,7 @@ class RemoteModel:
             )
             out = response.choices[0].message.content
         return out
-    
+
     def _call_llama11b(self, message_history):
 
         if not self.language_only:
@@ -356,7 +342,7 @@ class RemoteModel:
         )
         out = response.choices[0].message.content
         return out
-    
+
 
     def _call_qwen72b(self, message_history):
         if not self.language_only:
@@ -372,7 +358,7 @@ class RemoteModel:
                 response_format=dict(type='json_schema',  json_schema=dict(name='embodied_planning',schema=llm_generation_guide_manip))
             else:
                 response_format=dict(type='json_schema',  json_schema=dict(name='embodied_planning',schema=llm_generation_guide))
-        
+
         response = self.model.chat.completions.create(
             model=self.model_name,
             messages=message_history,
@@ -385,7 +371,7 @@ class RemoteModel:
         out = response.choices[0].message.content
         out = fix_json(out)
         return out
-    
+
     def _call_intern38b(self, message_history):
 
         # if not self.language_only:
@@ -429,10 +415,10 @@ if __name__ == "__main__":
     def encode_image(image_path):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
-        
+
 
     base64_image = encode_image("../../evaluator/midlevel/output.png")
-        
+
     messages=[
         {
             "role": "user",

@@ -8,8 +8,8 @@
             "module": "embodiedbench.main",
             "args": [
                 "env=eb-alf",
-                "model_name=~/checkpoints/clean_grounded/checkpoint-2100",
-                "model_type=local",
+                "model_name=~/checkpoints/clean_grounded_SFT/checkpoint-2100",
+                "model_type=qwen_instruct",
                 "exp_name=baseline",
                 "tp=1",
                 "temperature=0.6"
@@ -27,7 +27,7 @@
             "module": "embodiedbench.main",
             "args": [
                 "env=eb-alf",
-                "model_name=~/checkpoints/clean_grounded/checkpoint-2100",
+                "model_name=~/checkpoints/clean_grounded_SFT/checkpoint-2100",
                 "model_type=local",
                 "exp_name=baseline",
                 "tp=1",
