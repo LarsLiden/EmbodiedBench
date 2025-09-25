@@ -53,5 +53,6 @@ dependencies:
       - transformers==4.49.0
       - uvicorn==0.32.1
       - ray==2.49.2
+      - qwen-vl-utils==0.0.8
       # remove: numpy / pandas / matplotlib / pillow / PyQt5 / typing_extensions (now from conda)
       # remove: habitat-sim (will install from conda)
