@@ -1,4 +1,4 @@
-description: Evaluate models with magmathor-eval
+description: Evaluate models with embodiedbench
 
 # 24 / 27
 target:
@@ -49,14 +49,25 @@ search:
       - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
       - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
       - conda env create -f conda_envs/environment.yaml
+      - conda install -n embench -c aihabitat -c conda-forge habitat-sim=0.3.* headless
+
+      # Load Conda's shell hook so 'conda activate' works in this non-interactive script
+      - eval "$$(conda shell.bash hook)"
       - conda activate embench
 
-
       - echo "--= Installing dependencies =--"
-      # Install manually to deal with compatibility issues
+      - pip install -e .
       - pip install git+https://github.com/NICTA/pyairports.git
-      - bash install.sh
-      # - pip install -e .
+      - pip install outlines==0.0.46
+
+      - echo "--= Installing Git LFS and datasets =--"
+      - conda install -y -c conda-forge git-lfs
+      - git lfs install
+      - git lfs pull
+
+      - echo "--= Installing EB-ALFRED dataset =--"
+      - git clone https://huggingface.co/datasets/EmbodiedBench/EB-ALFRED
+      - mv EB-ALFRED embodiedbench/envs/eb_alfred/data/json_2.1.0
 
       # Note: Ignore ALSA errors, they are ok
       - export TOKENIZERS_PARALLELISM=false

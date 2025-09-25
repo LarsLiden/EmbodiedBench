@@ -230,7 +230,6 @@ dependencies:
       - omegaconf==2.3.0
       - open3d==0.18.0
       - openai==1.58.1
-      - outlines==0.0.46
       - pandas==2.2.3
       - peft==0.11.1
       - pillow==11.0.0

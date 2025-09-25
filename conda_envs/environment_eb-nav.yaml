@@ -120,7 +120,6 @@ dependencies:
       - omegaconf==2.3.0
       - openai==1.58.1
       - opencv-python==4.10.0.84
-      - outlines==0.0.46
       - packaging==24.2
       - pandas==2.2.3
       - peft==0.11.1

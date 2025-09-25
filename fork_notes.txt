@@ -26,3 +26,15 @@ Note: Ignore ALSA errors, they are ok
 export TOKENIZERS_PARALLELISM=false
 
 python -m embodiedbench.main env=eb-alf model_name=~/checkpoints/clean_grounded/checkpoint-2100 model_type=local exp_name='baseline' tp=1
+
+
+Results:
+==============
+~/EmbodiedBench/running/eb_alfred/{model_name}
+
+
+TEST
+------
+Removed:
+   - h11==0.14.0
+     - -e git+https://github.com/facebookresearch/habitat-lab.git@afe4058a7f8aa5ab71a133575cdaa79f0308af6a#egg=habitat_lab&subdirectory=habitat-lab
