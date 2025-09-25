@@ -1,3 +1,13 @@
+"""
+QwenVL Model Integration for EmbodiedBench
+
+This module provides native support for Qwen2.5-VL-7B-Instruct model using
+transformers library and qwen_vl_utils for optimal performance.
+
+Usage:
+    python -m embodiedbench.main env=eb-hab model_name=Qwen/Qwen2.5-VL-7B-Instruct model_type=qwen_instruct exp_name='baseline' tp=1
+"""
+
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 import torch
