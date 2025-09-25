@@ -19,6 +19,7 @@ from embodiedbench.planner.planner_config.generation_guide import llm_generation
 from embodiedbench.planner.planner_config.generation_guide_manip import llm_generation_guide_manip, vlm_generation_guide_manip
 from embodiedbench.planner.planner_utils import convert_format_2claude, convert_format_2gemini, ActionPlan_1, ActionPlan, ActionPlan_lang, \
                                              ActionPlan_1_manip, ActionPlan_manip, ActionPlan_lang_manip, fix_json
+from embodiedbench.planner.qwen_vl_model import QwenVLActor
 
 max_completion_tokens = 2048
 remote_url = os.environ.get('remote_url')
@@ -42,6 +43,8 @@ class RemoteModel:
         if self.model_type == 'local':
             backend_config = PytorchEngineConfig(session_len=12000, dtype='float16', tp=tp)
             self.model = pipeline(self.model_name, backend_config=backend_config)
+        elif self.model_type == 'qwen_instruct':
+            self.model = QwenVLActor(self.model_name, self.temperature)
         elif self.model_type == 'azure_openai':
             # Azure OpenAI setup with proper authentication
             scope = "api://trapi/.default"

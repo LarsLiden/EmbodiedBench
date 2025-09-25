@@ -290,6 +290,7 @@ You can customize the evaluation using the following flags:
   - `'remote'`: Standard API-based model access (default)
   - `'local'`: Local model execution with tensor parallelism
   - `'azure_openai'`: Azure OpenAI API with Microsoft TRAPI authentication
+  - `'qwen_instruct'`: Native Qwen2.5-VL-7B-Instruct support using transformers and qwen_vl_utils
   - `'custom'`: Custom model serving via API endpoint  
 - **`temperature`**: Controls the randomness of model outputs (default: `0.0` for deterministic responses). Higher values (e.g., `0.7` or `1.0`) increase randomness.  
 - **`down_sample_ratio`**: Data sampling ratio (default `1.0`). Use `0.1` for debugging (10% of the dataset).  
@@ -353,6 +354,19 @@ python -m embodiedbench.main env=eb-nav model_name=OpenGVLab/InternVL2_5-38B mod
 
 conda activate embench_man 
 python -m embodiedbench.main env=eb-man model_name=meta-llama/Llama-3.2-11B-Vision-Instruct model_type=local exp_name='baseline' tp=2
+```
+
+#### **Qwen2.5-VL-7B-Instruct Native Support**  
+For Qwen2.5-VL-7B-Instruct, we provide dedicated native support using `model_type=qwen_instruct` which directly uses the transformers library with qwen_vl_utils for optimal performance:
+```bash
+conda activate embench
+python -m embodiedbench.main env=eb-hab model_name=Qwen/Qwen2.5-VL-7B-Instruct model_type=qwen_instruct exp_name='baseline' tp=1
+
+# Use with local checkpoint
+python -m embodiedbench.main env=eb-hab model_name=/path/to/local/checkpoint model_type=qwen_instruct exp_name='baseline' tp=1
+
+# With temperature setting
+python -m embodiedbench.main env=eb-hab model_name=Qwen/Qwen2.5-VL-7B-Instruct model_type=qwen_instruct temperature=0.7 exp_name='baseline' tp=1
 ```
 
 #### **2️⃣ Online Model Serving (Recommended)**  

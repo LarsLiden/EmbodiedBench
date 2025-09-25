@@ -190,6 +190,17 @@ class VLMPlanner():
         self.planner_steps += 1
         return action, out
 
+    def act_qwen_instruct(self, prompt, obs):
+        """Handle Qwen2.5-VL-7B-Instruct model calls"""
+        assert type(obs) == str # input image path
+        out = self.model.model.respond(prompt, obs)  # self.model is RemoteModel, self.model.model is QwenVLActor
+        # fix common generated json errors
+        out = fix_json(out)
+        logger.debug(f"Model Output:\n{out}\n")
+        action = self.json_to_action(out)
+        self.planner_steps += 1
+        return action, out
+
 
     def act(self, observation, user_instruction):
         if type(observation) == dict:
@@ -199,11 +210,14 @@ class VLMPlanner():
         
         prompt = self.process_prompt(user_instruction, prev_act_feedback=self.episode_act_feedback)
         # some models do not support json scheme, add style into prompt
-        if 'claude' in self.model_name or 'InternVL' in self.model_name or 'Qwen2-VL' in self.model_name or 'Qwen2.5-VL' in self.model_name or self.model_type == 'custom':
+        if 'claude' in self.model_name or 'InternVL' in self.model_name or 'Qwen2-VL' in self.model_name or 'Qwen2.5-VL' in self.model_name or self.model_type == 'custom' or self.model_type == 'qwen_instruct':
             prompt = prompt + template_lang if self.language_only else prompt + template
 
         if self.model_type == 'custom':
-            return self.act_custom(prompt, obs) 
+            return self.act_custom(prompt, obs)
+        
+        if self.model_type == 'qwen_instruct':
+            return self.act_qwen_instruct(prompt, obs) 
 
         if len(self.episode_messages) == 0:
              self.episode_messages = self.get_message(obs, prompt)
