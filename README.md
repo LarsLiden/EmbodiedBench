@@ -358,6 +358,9 @@ python -m embodiedbench.main env=eb-man model_name=meta-llama/Llama-3.2-11B-Visi
 
 #### **Qwen2.5-VL-7B-Instruct Native Support**  
 For Qwen2.5-VL-7B-Instruct, we provide dedicated native support using `model_type=qwen_instruct` which directly uses the transformers library with qwen_vl_utils for optimal performance:
+
+**Note**: Make sure your environment includes `qwen-vl-utils==0.0.8`. This dependency is included in the main `environment.yaml` file.
+
 ```bash
 conda activate embench
 python -m embodiedbench.main env=eb-hab model_name=Qwen/Qwen2.5-VL-7B-Instruct model_type=qwen_instruct exp_name='baseline' tp=1
@@ -403,6 +406,22 @@ export server_url="IP_address:port/process"
 python -m embodiedbench.main env=eb-hab model_name='microsoft/Phi-4-multimodal-instruct' model_type='custom' exp_name='new_model'
 ```
 
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### "v not in ALL_PARALLEL_STYLES" Error
+This error typically occurs when using `model_type=qwen_instruct` without the required `qwen-vl-utils` dependency. 
+
+**Solution**: Ensure your conda environment includes `qwen-vl-utils==0.0.8`. This dependency is included in the main `environment.yaml` file. If you have an older environment, either:
+- Recreate the environment: `conda env create -f conda_envs/environment.yaml`
+- Or manually install: `pip install qwen-vl-utils==0.0.8`
+
+#### Model Loading Failures
+If you encounter issues loading Qwen2.5-VL models, verify:
+- The model path is correct (use `Qwen/Qwen2.5-VL-7B-Instruct` for HuggingFace models)
+- All dependencies are installed (`transformers`, `qwen-vl-utils`, `torch`)
+- Sufficient GPU memory is available
 
 ## Docker
 We have provided a docker file under the Docker folder. 

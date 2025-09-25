@@ -8,20 +8,49 @@ Usage:
     python -m embodiedbench.main env=eb-hab model_name=Qwen/Qwen2.5-VL-7B-Instruct model_type=qwen_instruct exp_name='baseline' tp=1
 """
 
-from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
-from qwen_vl_utils import process_vision_info
-import torch
 import sys
+
+try:
+    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+    import torch
+except ImportError as e:
+    print(
+        f"Error: Required transformers or torch libraries are not installed. "
+        f"Please ensure your conda environment is properly set up.\n"
+        f"Original error: {e}",
+        file=sys.stderr
+    )
+    sys.exit(1)
+
+try:
+    from qwen_vl_utils import process_vision_info
+except ImportError as e:
+    print(
+        f"Error: qwen-vl-utils is not installed. "
+        f"Please install it with: pip install qwen-vl-utils==0.0.8\n"
+        f"Original error: {e}",
+        file=sys.stderr
+    )
+    sys.exit(1)
 
 
 class QwenVLActor:
     def __init__(self, model_path: str, temperature: float):
-        local_files_only = model_path != "Qwen/Qwen2.5-VL-7B-Instruct"
-        self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            model_path, torch_dtype=torch.float16, device_map="auto", local_files_only=local_files_only
-        )
-        self.processor = AutoProcessor.from_pretrained(model_path)
-        self.temperature = temperature
+        try:
+            local_files_only = model_path != "Qwen/Qwen2.5-VL-7B-Instruct"
+            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                model_path, torch_dtype=torch.float16, device_map="auto", local_files_only=local_files_only
+            )
+            self.processor = AutoProcessor.from_pretrained(model_path, local_files_only=local_files_only)
+            self.temperature = temperature
+        except Exception as e:
+            print(
+                f"Failed to load Qwen2.5-VL model from '{model_path}'. "
+                f"Please ensure the model path is correct and all dependencies are installed.\n"
+                f"Error: {e}",
+                file=sys.stderr
+            )
+            sys.exit(1)
 
     def respond(self, prompt: str, obs: str = None) -> str:
         """
