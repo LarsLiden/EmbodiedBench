@@ -31,7 +31,13 @@ echo "Installing Git LFS..."
 conda activate embench
 conda install -y -c conda-forge git-lfs
 git lfs install
-git lfs pull
+# Only pull LFS files if we're in a git repository
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Git repository detected, pulling LFS files..."
+    git lfs pull
+else
+    echo "Not in a Git repository, skipping git lfs pull"
+fi
 
 # Install EB-ALFRED
 echo "Installing EB-ALFRED dataset..."
