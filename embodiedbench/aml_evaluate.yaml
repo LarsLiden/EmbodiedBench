@@ -54,6 +54,7 @@ search:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$$HOME/.local/bin:$$PATH"
 
+    # Start VLLM server in the background
     - echo "--= Starting VLLM serve in background =--"
     - nohup uv run --with vllm vllm serve "$$MODEL_CHECKPOINT" --host 0.0.0.0 --port
       8000 > vllm_server.log 2>&1 &
@@ -65,9 +66,11 @@ search:
       "Still waiting..."; sleep 10; done'
     - echo "VLLM server should be ready now"
 
-    - echo "--= Setting up Virtual Environment =--"
+
     - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
     - conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+    # Install alfred dependencies
     - echo "--= Calling install_alfred.sh =--"
     - bash install_alfred.sh
 

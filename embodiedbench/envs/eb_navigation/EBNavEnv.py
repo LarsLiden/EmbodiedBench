@@ -65,7 +65,7 @@ class EBNavigationEnv(gym.Env):
             "width": self.resolution,
             "height": self.resolution,
             "fieldOfView": fov,
-            # NOTE: Uss Linux64 for aml jobs
+            # NOTE: Use Linux64 for aml jobs
             "platform": Linux64,  # CloudRendering
         }
         self.env = ai2thor.controller.Controller(**self.config)
