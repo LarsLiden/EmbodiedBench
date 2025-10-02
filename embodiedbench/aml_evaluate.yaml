@@ -75,6 +75,10 @@ search:
     - eval "$$(conda shell.bash hook)"
     - conda activate embench
 
+    # Install Xvfb for Unity virtual display support (REQUIRED for AI2-THOR)
+    - echo "--= Installing Xvfb and Vulkan tools =--"
+    - sudo apt-get update && sudo apt-get install -y vulkan-tools xvfb mesa-utils
+
     - echo "--= Installing Azure dependencies =--"
     - pip install azure-identity
     - pip install azure-core
