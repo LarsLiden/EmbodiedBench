@@ -12,5 +12,7 @@ DISPLAY=":$display"
 
 # Run a tiny initialization to force Unity to start and create Player.log
 echo "--= Running AI2Thor initialization... =--"
+echo "AI2-THOR version check:"
+python -c "import ai2thor; print(f'AI2-THOR Version: {ai2thor.__version__}')" || echo "Could not get AI2-THOR version"
 python embodiedbench/force_ai2thor_initialization.py || true
 echo "--= Create Display Done =--"
