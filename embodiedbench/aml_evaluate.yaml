@@ -1,4 +1,4 @@
-description: EmbodiedBench evaluation with proven Xvfb approach (v2)
+description: EmbodiedBench evaluation with models served via VLLM
 
 target:
   service: sing
@@ -85,8 +85,8 @@ search:
     - echo "--= Init Complete =--"
 
     - echo "--= Creating Display =--"
-    - chmod +x Magmathor/Model/create_display.sh
-    - bash Magmathor/Model/create_display.sh || true
+    - chmod +x embodiedbench/create_display.sh
+    - bash embodiedbench/create_display.sh || true
 
     # Basic environment setup
     - export XDG_RUNTIME_DIR=/tmp/runtime-$$USER
