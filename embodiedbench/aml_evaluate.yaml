@@ -105,6 +105,7 @@ search:
 
     # Model API configuration
     - export remote_url=http://localhost:8000/v1/chat/completions
+    - export server_url=http://localhost:8000/v1/chat/completions
 
     # Run evaluation
     - echo "--= Running EmbodiedBench Evaluation =--"
